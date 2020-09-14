@@ -1,18 +1,18 @@
 {
   "files": {
-    "main.css": "/static/css/main.550da21f.chunk.css",
-    "main.js": "/static/js/main.6041f0ae.chunk.js",
-    "main.js.map": "/static/js/main.6041f0ae.chunk.js.map",
+    "main.css": "/static/css/main.f0ca8e0f.chunk.css",
+    "main.js": "/static/js/main.b8ab44be.chunk.js",
+    "main.js.map": "/static/js/main.b8ab44be.chunk.js.map",
     "runtime-main.js": "/static/js/runtime-main.d32ca624.js",
     "runtime-main.js.map": "/static/js/runtime-main.d32ca624.js.map",
     "static/css/2.f3cffc9e.chunk.css": "/static/css/2.f3cffc9e.chunk.css",
     "static/js/2.0337c400.chunk.js": "/static/js/2.0337c400.chunk.js",
     "static/js/2.0337c400.chunk.js.map": "/static/js/2.0337c400.chunk.js.map",
     "index.html": "/index.html",
-    "precache-manifest.401756e2136b4db555b515b34fa8a888.js": "/precache-manifest.401756e2136b4db555b515b34fa8a888.js",
+    "precache-manifest.ef734c30be7cf7d6ebeaa2541a6d4572.js": "/precache-manifest.ef734c30be7cf7d6ebeaa2541a6d4572.js",
     "service-worker.js": "/service-worker.js",
     "static/css/2.f3cffc9e.chunk.css.map": "/static/css/2.f3cffc9e.chunk.css.map",
-    "static/css/main.550da21f.chunk.css.map": "/static/css/main.550da21f.chunk.css.map",
+    "static/css/main.f0ca8e0f.chunk.css.map": "/static/css/main.f0ca8e0f.chunk.css.map",
     "static/js/2.0337c400.chunk.js.LICENSE.txt": "/static/js/2.0337c400.chunk.js.LICENSE.txt",
     "static/media/512px-Google_Scholar_logo.png": "/static/media/512px-Google_Scholar_logo.53193b31.png",
     "static/media/Birds-PNG-Image2.png": "/static/media/Birds-PNG-Image2.f6df7c7a.png",
@@ -31,7 +31,7 @@
     "static/js/runtime-main.d32ca624.js",
     "static/css/2.f3cffc9e.chunk.css",
     "static/js/2.0337c400.chunk.js",
-    "static/css/main.550da21f.chunk.css",
-    "static/js/main.6041f0ae.chunk.js"
+    "static/css/main.f0ca8e0f.chunk.css",
+    "static/js/main.b8ab44be.chunk.js"
   ]
 }
