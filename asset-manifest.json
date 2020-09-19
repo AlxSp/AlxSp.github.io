@@ -1,18 +1,18 @@
 {
   "files": {
-    "main.css": "/static/css/main.a4a3d667.chunk.css",
-    "main.js": "/static/js/main.fbfaaf3d.chunk.js",
-    "main.js.map": "/static/js/main.fbfaaf3d.chunk.js.map",
+    "main.css": "/static/css/main.cac2f4d9.chunk.css",
+    "main.js": "/static/js/main.7308b350.chunk.js",
+    "main.js.map": "/static/js/main.7308b350.chunk.js.map",
     "runtime-main.js": "/static/js/runtime-main.d32ca624.js",
     "runtime-main.js.map": "/static/js/runtime-main.d32ca624.js.map",
     "static/css/2.f3cffc9e.chunk.css": "/static/css/2.f3cffc9e.chunk.css",
     "static/js/2.0337c400.chunk.js": "/static/js/2.0337c400.chunk.js",
     "static/js/2.0337c400.chunk.js.map": "/static/js/2.0337c400.chunk.js.map",
     "index.html": "/index.html",
-    "precache-manifest.1fcbb8dc3dbd3f0baead1305412c0d51.js": "/precache-manifest.1fcbb8dc3dbd3f0baead1305412c0d51.js",
+    "precache-manifest.841d3d6cb0dfbe1d5093ee42a772f4d8.js": "/precache-manifest.841d3d6cb0dfbe1d5093ee42a772f4d8.js",
     "service-worker.js": "/service-worker.js",
     "static/css/2.f3cffc9e.chunk.css.map": "/static/css/2.f3cffc9e.chunk.css.map",
-    "static/css/main.a4a3d667.chunk.css.map": "/static/css/main.a4a3d667.chunk.css.map",
+    "static/css/main.cac2f4d9.chunk.css.map": "/static/css/main.cac2f4d9.chunk.css.map",
     "static/js/2.0337c400.chunk.js.LICENSE.txt": "/static/js/2.0337c400.chunk.js.LICENSE.txt",
     "static/media/512px-Google_Scholar_logo.png": "/static/media/512px-Google_Scholar_logo.53193b31.png",
     "static/media/Birds-PNG-Image2.png": "/static/media/Birds-PNG-Image2.f6df7c7a.png",
@@ -20,18 +20,18 @@
     "static/media/Logo.svg": "/static/media/Logo.f79b87ef.svg",
     "static/media/LogoColor.svg": "/static/media/LogoColor.069a282b.svg",
     "static/media/NBody.mp4": "/static/media/NBody.1c09a358.mp4",
+    "static/media/WebResume.pdf": "/static/media/WebResume.8ee709b9.pdf",
     "static/media/gitlab-icon-rgb.png": "/static/media/gitlab-icon-rgb.04248bdc.png",
     "static/media/nnDemo.mp4": "/static/media/nnDemo.7be362a4.mp4",
     "static/media/pexels-markus-spiske-129105.jpg": "/static/media/pexels-markus-spiske-129105.9587e374.jpg",
     "static/media/right-arrow.svg": "/static/media/right-arrow.5e5b72cc.svg",
-    "static/media/wave.e94091a5.svg": "/static/media/wave.e94091a5.svg",
-    "static/media/webResume.pdf": "/static/media/webResume.c88ddd27.pdf"
+    "static/media/wave.e94091a5.svg": "/static/media/wave.e94091a5.svg"
   },
   "entrypoints": [
     "static/js/runtime-main.d32ca624.js",
     "static/css/2.f3cffc9e.chunk.css",
     "static/js/2.0337c400.chunk.js",
-    "static/css/main.a4a3d667.chunk.css",
-    "static/js/main.fbfaaf3d.chunk.js"
+    "static/css/main.cac2f4d9.chunk.css",
+    "static/js/main.7308b350.chunk.js"
   ]
 }
