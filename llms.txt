@@ -1,0 +1,37 @@
+# Alexander Speicher's Portfolio
+
+> Personal website of Alexander Speicher, a Machine Learning engineer at Meta.
+
+This is a portfolio website showcasing professional experience, research projects, academic publications, and technical blog posts.
+
+## About
+
+Alexander Speicher is a Machine Learning engineer currently at Meta. Previously worked at Knowbl (conversational AI startup) and The Really Useful Information Company. Has academic research experience from Hofstra University in neural architecture search, American Sign Language recognition, and medical imaging.
+
+## Sections
+
+- [Home](https://alexanderspeicher.com/): Professional background, career history, and research experience
+- [Projects](https://alexanderspeicher.com/projects): Personal projects including ASL recognition, physics simulations, and audio ML
+- [Publications](https://alexanderspeicher.com/publications): Academic papers on neural architecture search, ASL learning curves, and distributed systems
+- [Blog](https://alexanderspeicher.com/blog): Technical blog posts on machine learning topics
+
+## Blog Posts
+
+- [Discrete Distribution Networks with Tinygrad](https://alexanderspeicher.com/blog/discrete-distribution-networks-with-tinygrad) (2026-01-31): Exploring DDN architecture and implementing it with tinygrad, including experiments with different node architectures and zero-shot conditional generation
+
+## Key Topics
+
+- Machine Learning
+- Neural Networks
+- Neural Architecture Search
+- Computer Vision
+- American Sign Language Recognition
+- Conversational AI
+- Physics Simulations
+
+## Contact
+
+- GitHub: https://github.com/AlxSp
+- GitLab: https://gitlab.com/alxsp
+- LinkedIn: https://www.linkedin.com/in/alexander-speicher
+- Google Scholar: https://scholar.google.com/citations?user=alexander-speicher
