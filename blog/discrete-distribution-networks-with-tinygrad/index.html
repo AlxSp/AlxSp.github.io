@@ -1,1 +1,101 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"/><link rel="icon" href="/favicon.ico?v=2"/><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap" rel="stylesheet"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/><meta name="theme-color" content="#ffffff"/><meta name="description" content="Web site created using create-react-app"/><link rel="apple-touch-icon" href="/LogoColor192.png"/><link rel="manifest" href="/manifest.json"/><title>AlxSp</title><script type="text/javascript">!function(i){if(i.search){var a={};i.search.slice(1).split("&").forEach((function(i){var l=i.split("=");a[l[0]]=l.slice(1).join("=").replace(/~and~/g,"&")})),void 0!==a.p&&window.history.replaceState(null,null,i.pathname.slice(0,-1)+(a.p||"")+(a.q?"?"+a.q:"")+i.hash)}}(window.location)</script><script defer="defer" src="/static/js/main.f0ff4966.js"></script><link href="/static/css/main.1fbb44ed.css" rel="stylesheet"></head><body class="body"><noscript>You need to enable JavaScript to run this app.</noscript><div id="root" class="root"></div></body></html>
+<!doctype html><html lang="en"><head><meta charset="utf-8"/><link rel="icon" href="/favicon.ico?v=2"/><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap" rel="stylesheet"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/><meta name="theme-color" content="#ffffff"/><meta name="description" content="Exploring Discrete Distribution Networks and implementing them with tinygrad" /><link rel="canonical" href="https://alexanderspeicher.com/blog/discrete-distribution-networks-with-tinygrad/" /><link rel="apple-touch-icon" href="/LogoColor192.png"/><link rel="manifest" href="/manifest.json"/><title>Discrete Distribution Networks with Tinygrad | Alexander Speicher</title><script type="text/javascript">!function(i){if(i.search){var a={};i.search.slice(1).split("&").forEach((function(i){var l=i.split("=");a[l[0]]=l.slice(1).join("=").replace(/~and~/g,"&")})),void 0!==a.p&&window.history.replaceState(null,null,i.pathname.slice(0,-1)+(a.p||"")+(a.q?"?"+a.q:"")+i.hash)}}(window.location)</script><script defer="defer" src="/static/js/main.ad2bbddb.js"></script><link href="/static/css/main.1fbb44ed.css" rel="stylesheet">    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Discrete Distribution Networks with Tinygrad | Alexander Speicher" />
+    <meta property="og:description" content="Exploring Discrete Distribution Networks and implementing them with tinygrad" />
+    <meta property="og:url" content="https://alexanderspeicher.com/blog/discrete-distribution-networks-with-tinygrad/" />
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Discrete Distribution Networks with Tinygrad","description":"Exploring Discrete Distribution Networks and implementing them with tinygrad","datePublished":"2026-01-31","dateModified":"2026-01-31","author":{"@type":"Person","name":"Alexander Speicher"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://alexanderspeicher.com/blog/discrete-distribution-networks-with-tinygrad/"}}</script>
+  </head><body class="body"><noscript>You need to enable JavaScript to run this app.</noscript><div id="root" class="root">
+<article class="blogFullPost" data-static-blog-prerender="true">
+<h1>Discrete Distribution Networks with Tinygrad</h1>
+<time datetime="2026-01-31">January 31, 2026</time>
+<div class="blogFullPostContent">
+<p>Diffusion models generate images through iterative denoising. They start off from Gaussian noise, then refine it over multiple forward passes. The stochasticity appears via the noise-induced input. Discrete Distribution Networks take a different approach by trying to match the training distribution with a set of discrete candidates. The network outputs a number of discrete candidates at each layer, and generation is done via sequential selection by picking one candidate per layer in a single forward pass. The randomness comes from these discrete choices, not from input noise.</p>
+<p><img src="/blog-images/discrete-distribution-networks-with-tinygrad/image-1.png" alt="image-1" loading="lazy" /> <a href="https://arxiv.org/abs/2401.00036"><em>Figure from Yang, 2024</em></a></p>
+<p>Even though the number of nodes K per layer may be small, stacking multiple DDN layers L leads to $K^L$ possible outputs, creating massive representation capacity. Even modest values (K=64, L=10) yield $10^{18}$ possible images, yet each image can be fully encoded/compressed by a list of L integers (the sequence of selected node indices).</p>
+<p><img src="/blog-images/discrete-distribution-networks-with-tinygrad/image-2.png" alt="image-2" loading="lazy" /> <a href="https://arxiv.org/abs/2401.00036"><em>Figure from Yang, 2024</em></a></p>
+<p>The training approach is also unique; to avoid some nodes from being under or over represented the authors propose a Split-and-Prune algorithm inspired by evolutionary selection: nodes matched too frequently get cloned; nodes rarely selected get pruned. The goal here is to have node selection chances uniformly distributed across the layer.</p>
+<p>The discrete sampling also enables zero-shot conditional generation without gradient-based guidance. Since generation is just a sequence of discrete choices, one can guide the model&#39;s output with any discriminator by scoring each node&#39;s output, and then picking the best one.</p>
+<p>The following is my exploration of the DDN paper, which also served as an opportunity to get familiar with the tinygrad library (my <a href="https://github.com/AlxSp/discrete_distribution_network">repo</a> can be found under resources).</p>
+<h2>Normal Distribution Example</h2>
+<p>To build intuition, let&#39;s start simple: a 1D tensor of just 5 learnable parameters (nodes) trained to approximate a normal distribution. Each training step, we sample from the target, find the closest node to that target, and only that node gets updated via the error gradient.</p>
+<p>But this then leads to a problem: some nodes get matched frequently, others rarely or never. These &quot;dead nodes&quot; would still get selected during generation, producing poor outputs. Meanwhile, high-density regions of the target distribution end up underrepresented.</p>
+<p><img src="/blog-images/discrete-distribution-networks-with-tinygrad/image-3.png" alt="image-3" loading="lazy" /> <em>Splitting and Pruning to move closer to the target distribution</em> <a href="https://arxiv.org/abs/2401.00036"><em>Figure from Yang, 2024</em></a></p>
+<p>To remedy this we keep track of the selection counts of each node and if a node falls below a certain threshold ($0.5/K$ in the paper) it will get pruned. Similarly if a node exceeds a selection threshold ($2/K$), it will be split into two nodes with the same value. The figure above also illustrates how the KL divergence between the target P and the discrete approximation Q decreases as out of distribution nodes get split and pruned as their values update.</p>
+<p>Implementation wise since we really can&#39;t (efficiently) dynamically increase or decrease the number of nodes we keep the number of nodes static; pruned nodes will cause the most selected nodes to split and replace them and splitting will cause the least selected nodes to be replaced/pruned.</p>
+<p>Finally here&#39;s a training run with 10,000 nodes, to demonstrate how the discrete approximate the normal distribution fairly well as their number increases.</p>
+<p><img src="/blog-images/discrete-distribution-networks-with-tinygrad/nd_10knodes.gif" alt="nd_10knodes" loading="lazy" /></p>
+<p>After training is complete the nodes cluster where probability density is high and uniform sampling over the trained nodes approximates the target distribution.</p>
+<p>This same principle scales to images but instead of scalar parameters nodes become 1x1 convolutions that output image patches.</p>
+<h2>MNIST</h2>
+<p>Let&#39;s move on to a slightly more difficult dataset, MNIST.  I opted to use a UNET architecture for the backbone, instead of the hierarchical architecture mentioned in the paper. I also ended up experimenting bit more with the architecture of the nodes, with my experiments laid out below.</p>
+<h3>Output Nodes <a href="https://github.com/AlxSp/discrete_distribution_network/blob/main/train_mnist_output_nodes.py">(code)</a></h3>
+<p>The paper&#39;s figures mainly show the basic output nodes, where each node acts as a decoder which maps from the feature space into the output space. The selected output, closest to the target gets then concatenated or added to the features to condition the next layers on the chosen node. By themselves output nodes don&#39;t work very well (as I also found in my experiments), that&#39;s why the author also proposes a &quot;leak choice&quot; where each node also produces some additional &quot;features&quot; which also get added to the features for conditioning. Additionally the authors add chain dropout, the nodes in each layer get chosen at random given a certain probability.</p>
+<p><img src="/blog-images/discrete-distribution-networks-with-tinygrad/image-5.png" alt="image-5" loading="lazy" /></p>
+<h3>Feature Nodes <a href="https://github.com/AlxSp/discrete_distribution_network/blob/main/train_mnist_feature_nodes.py">(code)</a></h3>
+<p>I figured with the original approach the nodes have to learn unique characteristic as well as mapping from feature/embedding space to output space. So instead I had the nodes directly map back to the embedding space, and a shared decoder translates the embeddings to output space. This obviously has the  drawback that the nodes are larger since they go from feature to feature space instead of feature to output space, where the output dim is usually a lot smaller. The model does converge a lot quicker compared to the original architecture in terms of training steps. But it does seem overfit on the training data without adding chain drop out.</p>
+<p><img src="/blog-images/discrete-distribution-networks-with-tinygrad/image-6.png" alt="image-6" loading="lazy" /></p>
+<h3>Latent/Bottlenecked Nodes <a href="https://github.com/AlxSp/discrete_distribution_network/blob/main/train_mnist_bottleneck.py">(code)</a></h3>
+<p>Attempting to tackle the above mentioned problem with the increase node size, we can instead compress the embedding dim through a bottleneck an then have the nodes act on this space before upcasting it back to the feature dim. This works as well as the full feature nodes, and doesn&#39;t seem to overfit even without chain dropout.</p>
+<p><img src="/blog-images/discrete-distribution-networks-with-tinygrad/image-7.png" alt="image-7" loading="lazy" /></p>
+<h3>Comparison</h3>
+<p>All models share the same UNET backbone between the layers so they only differ in the actual DDN architecture. They all converge to a similar eval loss besides the feature nodes without chain drop, which most likely is overfitting on the training data. <img src="/blog-images/discrete-distribution-networks-with-tinygrad/image-8.png" alt="image-8" loading="lazy" /> <em>feature nodes with and without chain dropout</em></p>
+<p>Also the output nodes seem to converge a lot slower compared to the feature and bottleneck nodes. <img src="/blog-images/discrete-distribution-networks-with-tinygrad/image-9.png" alt="image-9" loading="lazy" /> <em>comparison between bottleneck nodes and the output node with leak choice</em></p>
+<p>Table with evaluation results and parameter counts:</p>
+<table><thead><tr>
+<th><strong>Model</strong></th>
+<th><strong>Test Loss</strong></th>
+<th><strong>Parameters</strong></th>
+</tr></thead><tbody>
+<tr>
+<td>bottleneck_b16</td>
+<td>0.022420</td>
+<td><strong>5,683,878</strong></td>
+</tr>
+<tr>
+<td>bottleneck_b16 (with chain-dropout)</td>
+<td><strong>0.022293</strong></td>
+<td><strong>5,683,878</strong></td>
+</tr>
+<tr>
+<td>feature_nodes</td>
+<td>0.029651</td>
+<td>8,036,934</td>
+</tr>
+<tr>
+<td>feature_nodes (with chain-dropout)</td>
+<td>0.022822</td>
+<td>8,036,934</td>
+</tr>
+<tr>
+<td>output_nodes_leak16</td>
+<td>0.024325</td>
+<td>6,418,464</td>
+</tr>
+<tr>
+<td>output_nodes_leak16 (with chain-dropout)</td>
+<td>0.022866</td>
+<td>6,418,464</td>
+</tr>
+</tbody></table>
+<p><img src="/blog-images/discrete-distribution-networks-with-tinygrad/image-10.png" alt="image-10" loading="lazy" /> <em>Individual digits produced by each architecture</em></p>
+<p><img src="/blog-images/discrete-distribution-networks-with-tinygrad/image-11.png" alt="image-11" loading="lazy" /> <em>Intermediate outputs of the bottleneck model at each layer</em></p>
+<h3>Zero-Shot Conditional Generation</h3>
+<p>The paper touts that the model can do guided generation without being explicitly trained to do so. This is done, by scoring the dd nodes output with an evaluator, this can be MSE loss with a target image, similar to training, or another network like clip. For a simple demonstration I just trained tinygrad&#39;s example mnist classifier and pass along with it a number we would like to generate. The classifier returns the class logits for each node &#39;s output and we select the node whose current output is closest to our desired number.</p>
+<p><img src="/blog-images/discrete-distribution-networks-with-tinygrad/image-12.png" alt="image-12" loading="lazy" /> <em>temperature sampled numbers based on the classifier logits (bottleneck arch)</em></p>
+<h3>Beam Search</h3>
+<p>As you can see some numbers don&#39;t seem to come out quite right, which is probably due to  the classifier struggling with the &quot;half-baked&quot; images of early layer outputs and makes us pick the wrong nodes that won&#39;t lead to satisfying outputs. Luckily since we are dealing with discrete sequential &quot;decisions&quot; we can utilize any tricks that have been developed for LLMs. Here I added beam search and our troubled numbers look a lot better now!</p>
+<p><img src="/blog-images/discrete-distribution-networks-with-tinygrad/image-13.png" alt="image-13" loading="lazy" /> <em>(bottleneck arch) (You may notice that the outputs of the individual numbers now look a bit more samey than before, which is due beam search limiting the diversity of the outputs as it optimizes for the most probable.)</em></p>
+<p>Finally what actually happens when we just do random sampling? Well... it does produce digits but the numbers are more hit or miss <img src="/blog-images/discrete-distribution-networks-with-tinygrad/image-14.png" alt="image-14" loading="lazy" /> <em>(bottleneck arch)</em></p>
+<h2>What I learned</h2>
+<p>This concludes my exploration of the DDN paper, it definitely was a very novel idea which was fun to implement.</p>
+<h3>DDN</h3>
+<p>While I don&#39;t think the architecture will replace any of the current mainstream diffusion models, it&#39;s cool to see how such a unique architecture achieves reasonable outputs. The evolution-inspired approach to splitting and pruning was a highlight. One of the reasons why I don&#39;t think this approach will find mainstream appeal is that guided generation requires evaluating all K nodes at each layer, which gets expensive.</p>
+<p>Some optimizations I&#39;d recommend for future work within Tinygrad: <strong>two-pass bottleneck selector</strong>: in Pass A (no-grad) score nodes in <strong>output space</strong> in small chunks, updating an argmin, so you never materialize the full feature tensor for all nodes since we only need it from one node for the next layer. In Pass B (with grad) <strong>recompute only the selected node(s)</strong> in feature space (e.g., via grouped 1×1 conv) and run the real decoder/backprop.</p>
+<p>I also noticed loss spikes occurring around the same training steps across all runs — could be worth investigating.</p>
+<h3>TinyGrad</h3>
+<p>A few lessons from implementing this in tinygrad:</p>
+<p>- <strong>In-place operations break silently in jitted code</strong>: things like `/=` would fail without error, which was tricky to debug. Tbh this more of a noob mistake on my end. - <strong>Advanced indexing doesn&#39;t play well with multi-GPU</strong>: After I had split and prune working well, I  started training on multiple GPUs which completely broke the process again and I had to reimplement without advanced indexing. - <strong>The node kernel is the compute bottleneck</strong>: especially for feature and bottleneck variants, it uses a lot of memory. The output nodes can be more easily optimized as one only has to evaluate the output, and then select the leak features of the node. - <strong>Making split-and-prune jittable was tricky</strong>: but not the main performance bottleneck once done.</p>
+<h1>Resources</h1>
+<p>- <a href="https://arxiv.org/pdf/2401.00036">Paper</a> - <a href="https://github.com/AlxSp/discrete_distribution_network">Personal Project Github</a> - <a href="https://github.com/DIYer22/discrete_distribution_networks">Official Github</a> - <a href="https://github.com/lucidrains/discrete-distribution-network">lucidrains github</a> - <a href="https://discrete-distribution-networks.github.io/2d-density-estimation-gif-with-10000-nodes-ddn.html">10K node demo</a></p>
+</div>
+</article>
+    </div></body></html>
